@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Big Pomodoro Timer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #fff;
+      font-family: 'Quicksand','Segoe UI',cursive,sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .3s;
+    }
+    body.dark {
+      background: #202833;
+    }
+    .timer-card {
+      background: #191e23;
+      border-radius: 38px;
+      box-shadow: 0 8px 60px #446c8840;
+      padding: 48px 48px 36px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 480px;
+      max-width:95vw;
+      position: relative;
+      margin-bottom: 36px;
+      transition: background .3s;
+    }
+    .dark .timer-card {background:#232433;}
+    .preset-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 34px;
+    }
+    .preset-btn {
+      background: #deeef8;
+      color: #205572;
+      border: none;
+      border-radius: 13px;
+      padding: 14px 34px;
+      font-size: 1.34em;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0 3px;
+      box-shadow: 0 3px 12px #006c8830;
+      transition: background .18s;
+      outline: none;
+    }
+    .preset-btn.selected {
+      background: #2e8990;
+      color: #fff;
+    }
+    .timer-display-row {
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      width: 100%;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .timer-data {
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .timer-label {
+      font-size: 1.32em;
+      color: #aee6fa;
+      margin-bottom: -4px;
+      font-weight:600;
+    }
+    .time-text {
+      font-size: 4.1em;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+    }
+    .stop-btn, .custom-btn {
+      background:#353c42;
+      color:#fff;
+      border:none;
+      border-radius:12px;
+      padding:14px 36px;
+      font-size:1.05em;
+      margin-top:8px;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:0 1px 12px #446c8860;
+      transition:background .23s;
+      outline:none;
+    }
+    .stop-btn:hover, .custom-btn:hover {
+      background: #4fa5b6;
+      color:#fff;
+    }
+    .custom-btn {
+      margin-left:14px;
+      background:#1faa70;
+    }
+    .progress-ring {
+      width: 180px; height: 180px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(46,137,144,.12);
+      border-radius: 50%;
+      box-shadow: 0 5px 17px #38ddc640;
+      transition:box-shadow .4s;
+      cursor:pointer;
+    }
+    .progress-svg {
+      position: absolute; top: 0; left: 0;
+    }
+    .progress-center {
+      width: 92px; height: 92px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:50%; background:#182327;
+      z-index: 2; position: absolute; top:44px; left:44px;
+      box-shadow:0 1px 8px #446c8860;
+      overflow: hidden;
+    }
+    .pause-icon, .play-icon {
+      font-size:3.2em; color:#80c8fa; text-align:center; user-select:none; pointer-events:none;
+    }
+    .play-icon {margin-left:8px;}
+    /* Ring finish animation */
+    .progress-ring.pulse { box-shadow:0 0 48px #01aad677,0 0 30px #80c8fa88 inset; animation:pulseRing 1.5s;}
+    @keyframes pulseRing {
+      0% {box-shadow:0 0 25px #01aad677,0 0 10px #80c8fa12 inset;}
+      60% {box-shadow:0 0 48px #01aad677,0 0 30px #80c8fa88 inset;}
+      100% {box-shadow:0 0 25px #01aad677,0 0 10px #80c8fa12 inset;}
+    }
+    /* Notes section */
+    .notes-section {
+      background: #e3f6fb;
+      border-radius: 18px;
+      box-shadow: 0 3px 18px #b8f5ef55;
+      padding: 22px 28px 22px 28px;
+      min-width: 480px;
+      min-height:100px;
+      margin-bottom:22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .dark .notes-section {background:#232433;}
+    .notes-title {
+      font-size: 1.25em;
+      font-weight: 600;
+      color: #247c99;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+    }
+    .dark .notes-title {color:#8ecfff;}
+    .notes-area {
+      width: 100%;
+      min-height: 74px;
+      border-radius: 10px;
+      border: none;
+      padding: 12px 17px;
+      font-size: 1.09em;
+      font-family: inherit;
+      background: #fafeff;
+      color: #356c6c;
+      margin-bottom: 13px;
+      resize: vertical;
+      outline: none;
+      box-shadow: 0 2px 6px #aee6fa20;
+    }
+    .dark .notes-area {background:#101117;color:#aee6fa;}
+    .notes-actions {
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      margin-top:-3px;
+      margin-bottom:7px;
+    }
+    .clear-btn, .dm-btn {
+      background:#91dade;
+      color:#205572;
+      border:none;
+      border-radius:7px;
+      padding:7px 19px;
+      font-size:0.99em;
+      font-weight:600;
+      box-shadow:0 1px 6px #c0f6ff20;
+      cursor:pointer;
+      transition:background .14s;
+      outline:none;
+      margin-right:10px;
+    }
+    .clear-btn:hover, .dm-btn:hover {
+      background:#2e8990;
+      color:#fff;
+    }
+    .dm-btn { background:#aee6fa; color:#232433;}
+    .dark .dm-btn {background:#181a22;color:#aee6fa}
+    /* Progress emojis */
+    .progress-emojis {
+      font-size: 1.7em;
+      letter-spacing: 0.25em;
+      margin-bottom: 5px;
+      color: #2e8990;
+      text-align:center;
+      margin-top:7px;
+      font-family: 'Segoe UI Emoji', sans-serif;
+      text-shadow:0 0 6px #58caf233;
+    }
+  </style>
+</head>
+<body>
+  <!-- Timer -->
+  <div class="timer-card">
+    <div class="preset-row">
+      <button class="preset-btn selected" onclick="setPreset(10)">10 mins</button>
+      <button class="preset-btn" onclick="setPreset(20)">20 mins</button>
+      <button class="preset-btn" onclick="setPreset(30)">30 mins</button>
+    </div>
+    <div class="timer-display-row">
+      <div class="timer-data">
+        <span class="timer-label">Timer</span>
+        <span id="timeText" class="time-text">10:00</span>
+        <div>
+          <button class="stop-btn" onclick="stopTimer()">Stop</button>
+          <button class="custom-btn" onclick="customTime()">Custom</button>
+        </div>
+      </div>
+      <div class="progress-ring" id="progressRing" onclick="togglePauseResume()" title="Pause/Resume">
+        <svg class="progress-svg" width="180" height="180">
+          <circle stroke="#80c8fa" stroke-width="19" fill="none" cx="90" cy="90" r="70"/>
+          <circle id="fgCircle" stroke="#01aad6" stroke-width="19" fill="none" cx="90" cy="90" r="70"
+            stroke-dasharray="439.6" stroke-dashoffset="0" style="transition:stroke-dashoffset 0.6s;"/>
+        </svg>
+        <div class="progress-center">
+          <span id="pauseIcon" class="pause-icon">❙❙</span>
+          <span id="playIcon" class="play-icon" style="display:none">►</span>
+        </div>
+      </div>
+    </div>
+    <div class="progress-emojis" id="progressEmojis"></div>
+  </div>
+  <!-- Notes Section -->
+  <div class="notes-section">
+    <div class="notes-title">Session Notes & Tasks</div>
+    <textarea class="notes-area" id="notesArea" rows="3" placeholder="Write your notes, goals, or tasks here!"></textarea>
+    <div class="notes-actions">
+      <button class="clear-btn" onclick="clearNotes()">Clear Notes</button>
+      <button class="dm-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+    </div>
+  </div>
+  <audio id="notifSound" src="https://cdn.pixabay.com/audio/2022/02/23/audio_115b142334.mp3" preload="auto"></audio>
+  <script>
+    // Timer logic
+    let presetMinutes = 10;
+    let timerMin = presetMinutes, timerSec = 0, timerInterval = null, isPaused = false;
+    let progressSession = 0, progressSets = 0;
+    const ringTotal = 439.6;
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function updateDisplay(){
+      document.getElementById('timeText').textContent = pad(timerMin)+":"+pad(timerSec);
+      let total = presetMinutes*60, elapsed = presetMinutes*60-timerMin*60-timerSec;
+      let percent = elapsed/total;
+      let offset = ringTotal-ringTotal*percent;
+      document.getElementById('fgCircle').setAttribute('stroke-dashoffset',offset);
+    }
+    function tick(){
+      if(!isPaused){
+        if(timerMin==0 && timerSec==0){
+          finishSession();
+          return;
+        }
+        if(timerSec>0) timerSec--;
+        else{ timerSec=59; timerMin--; }
+        updateDisplay();
+      }
+    }
+    function startTimer(){
+      if(timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(tick,1000);
+      isPaused = false;
+      document.getElementById('pauseIcon').style.display = "";
+      document.getElementById('playIcon').style.display = "none";
+      document.getElementById('progressRing').classList.remove('pulse');
+    }
+    function stopTimer(){
+      clearInterval(timerInterval);
+      timerMin = presetMinutes; timerSec = 0;
+      updateDisplay();
+      isPaused = false;
+      document.getElementById('pauseIcon').style.display = "";
+      document.getElementById('playIcon').style.display = "none";
+      document.getElementById('progressRing').classList.remove('pulse');
+    }
+    function togglePauseResume(){
+      isPaused=!isPaused;
+      if(isPaused){
+        clearInterval(timerInterval);
+        document.getElementById('pauseIcon').style.display = "none";
+        document.getElementById('playIcon').style.display = "";
+      }else{
+        startTimer();
+      }
+    }
+    function setPreset(mins){
+      presetMinutes=mins;
+      document.querySelectorAll(".preset-btn").forEach(btn=>btn.classList.remove("selected"));
+      document.querySelectorAll(".preset-btn")[{10:0,20:1,30:2}[mins]].classList.add("selected");
+      stopTimer();
+      startTimer();
+    }
+    function customTime(){
+      let mins = prompt("Enter custom minutes (max 120):", presetMinutes);
+      if(!isNaN(mins) && mins>0 && mins<=120){
+        presetMinutes = parseInt(mins);
+        stopTimer(); startTimer();
+        document.querySelectorAll(".preset-btn").forEach(btn=>btn.classList.remove("selected"));
+      }
+    }
+    function finishSession(){
+      stopTimer();
+      sessionProgress();
+      playDone();
+      sendNotification();
+      document.getElementById('progressRing').classList.add('pulse');
+    }
+    function playDone(){
+      let sound = document.getElementById("notifSound");
+      sound.currentTime = 0; sound.play();
+    }
+    function sendNotification(){
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          let content = document.getElementById('notesArea').value || "Time's up! Take a break or check your notes.";
+          new Notification("Pomodoro Session Finished", {body: content, icon:"https://img.icons8.com/color/96/000000/tomato.png"});
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then(function (perm) {
+            if (perm === "granted") sendNotification();
+          });
+        }
+      }
+    }
+    // Notes logic
+    function clearNotes(){ document.getElementById('notesArea').value=""; }
+    // Dark mode
+    function toggleDarkMode(){
+      document.body.classList.toggle('dark');
+    }
+    // Progress emoji logic
+    function sessionProgress(){
+      progressSession++;
+      if(progressSession>=4){progressSession=0;progressSets++;}
+      showProgress();
+    }
+    function showProgress(){
+      let s = "🍅".repeat(progressSession) + " " + "✔️".repeat(progressSets);
+      document.getElementById('progressEmojis').textContent = s;
+    }
+    window.onload = function(){
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+      updateDisplay(); startTimer(); showProgress();
+    };
+  </script>
+</body>
+</html>
